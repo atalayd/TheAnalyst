@@ -1,8 +1,8 @@
 <!DOCTYPE HTML>
 <!--
-	Massively by HTML5 UP
-	html5up.net | @ajlkn
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+    Massively by HTML5 UP
+    html5up.net | @ajlkn
+    Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 -->
 <html>
 
@@ -14,6 +14,52 @@
 	<noscript>
 		<link rel="stylesheet" href="assets/css/noscript.css" />
 	</noscript>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<style>
+		.stock-options a {
+			margin: 0 10px;
+			cursor: pointer;
+			text-decoration: none;
+			color: white;
+			font-weight: bold;
+		}
+
+		.stock-options a:hover {
+			text-decoration: underline;
+		}
+
+		.dropdown {
+			display: inline-block;
+			position: relative;
+		}
+
+		.dropdown-content {
+			display: none;
+			position: absolute;
+			background-color: #83594c;
+			/* Brownish background */
+			min-width: 160px;
+			box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+			z-index: 1;
+		}
+
+		.dropdown-content a {
+			color: white;
+			/* White text for contrast */
+			padding: 12px 16px;
+			text-decoration: none;
+			display: block;
+		}
+
+		.dropdown-content a:hover {
+			background-color: #5A3B2C;
+			/* Darker brown on hover */
+		}
+
+		.dropdown.show .dropdown-content {
+			display: block;
+		}
+	</style>
 </head>
 
 <body class="is-preload">
@@ -34,6 +80,24 @@
 			<ul class="actions">
 				<li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li>
 			</ul>
+			<div class="stock-options">
+				<a onclick="updateStock('SPY')">S&P 500</a> |
+				<a onclick="updateStock('QQQ')">Nasdaq</a> |
+				<a onclick="updateStock('NVDA')">Nvidia</a> |
+				<div class="dropdown">
+					<span onclick="toggleDropdown()">...</span>
+					<div class="dropdown-content">
+						<a onclick="updateStock('AAPL')">Apple</a>
+						<a onclick="updateStock('AMZN')">Amazon</a>
+						<a onclick="updateStock('GOOGL')">Alphabet</a>
+						<a onclick="updateStock('MSFT')">Microsoft</a>
+						<a onclick="updateStock('TSLA')">Tesla</a>
+						<a onclick="updateStock('META')">Meta (Facebook)</a>
+					</div>
+				</div>
+			</div>
+			<div id="live-ticker">Loading stock data...</div>
+			<canvas id="stock-chart" width="400" height="200"></canvas>
 		</div>
 
 		<!-- Header -->
@@ -71,7 +135,7 @@
 					<p>Data Cleaning (Credit Risk Data) in SQL</p>
 				</header>
 				<a href="https://github.com/atalayd/PortfolioProjects/blob/main/Credit_Risk_Data.sql"
-					class="image main"><img src="images\credit risk.avif" alt="" /></a>
+					class="image main"><img src="images/credit risk.avif" alt="" /></a>
 				<ul class="actions special">
 					<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/Credit_Risk_Data.sql"
 							class="button large">View Project</a></li>
@@ -88,12 +152,11 @@
 							</a></h2>
 					</header>
 					<a href="https://github.com/atalayd/PortfolioProjects/blob/main/bond_prices_vs_sp500_analysis.ipynb"
-						class="image fit"><img src="images\Pointing.jpeg" alt="" /></a>
+						class="image fit"><img src="images/Pointing.jpeg" alt="" /></a>
 					<p>Exploring the Inverse Relationship Between Bond Prices and the S&P 500</p>
 					<ul class="actions special">
 						<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/bond_prices_vs_sp500_analysis.ipynb"
-								class="button">View
-								Project</a></li>
+								class="button">View Project</a></li>
 					</ul>
 				</article>
 				<article>
@@ -105,7 +168,7 @@
 							</a></h2>
 					</header>
 					<a href="https://github.com/atalayd/PortfolioProjects/blob/main/DataCleaningNashvilleHousing.sql"
-						class="image fit"><img src="images\Housing.avif" alt="" /></a>
+						class="image fit"><img src="images/Housing.avif" alt="" /></a>
 					<p>Cleaning the Housing Data in SQL Server</p>
 					<ul class="actions special">
 						<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/DataCleaningNashvilleHousing.sql"
@@ -118,7 +181,7 @@
 							</a></h2>
 					</header>
 					<a href="https://public.tableau.com/app/profile/atalay.durdu/vizzes" class="image fit"><img
-							src="images\TableauLogo.png" alt="" /></a>
+							src="images/TableauLogo.png" alt="" /></a>
 					<p>My Tableau Dasboards</p>
 					<ul class="actions special">
 						<li><a href="https://public.tableau.com/app/profile/atalay.durdu/vizzes" class="button">View
@@ -134,12 +197,11 @@
 							</a></h2>
 					</header>
 					<a href="https://github.com/atalayd/PortfolioProjects/blob/main/Excel%20Project%20Dataset.xlsx"
-						class="image fit"><img src="images\Designer.png" alt="" /></a>
+						class="image fit"><img src="images/Designer.png" alt="" /></a>
 					<p>Data Preparation and Visualization using Excel</p>
 					<ul class="actions special">
 						<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/Excel%20Project%20Dataset.xlsx"
-								class="button">View
-								Project</a></li>
+								class="button">View Project</a></li>
 					</ul>
 				</article>
 				<article>
@@ -154,8 +216,7 @@
 					<p>Preparing the data for simple Excel Dashboard</p>
 					<ul class="actions special">
 						<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/Combined_Financial_Data_2013_2023.xlsx"
-								class="button">View
-								Project</a></li>
+								class="button">View Project</a></li>
 					</ul>
 				</article>
 				<article>
@@ -165,7 +226,7 @@
 							</a></h2>
 					</header>
 					<a href="https://github.com/atalayd/PortfolioProjects/blob/main/Covid19DataExploration.sql"
-						class="image fit"><img src="images\Data exploration.jpeg" alt="" /></a>
+						class="image fit"><img src="images/Data exploration.jpeg" alt="" /></a>
 					<p>Data Exploration of Covid19 Dataset in SQL Server</p>
 					<ul class="actions special">
 						<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/Covid19DataExploration.sql"
@@ -181,17 +242,14 @@
 							</a></h2>
 					</header>
 					<a href="https://github.com/atalayd/PortfolioProjects/blob/main/bond_prices_vs_sp500_analysis.ipynb"
-						class="image fit"><img src="images\PythonJupyter.png" alt="" /></a>
+						class="image fit"><img src="images/PythonJupyter.png" alt="" /></a>
 					<p>Netflix Data for Data Prep and Correlation Analysis</p>
 					<ul class="actions special">
 						<li><a href="https://github.com/atalayd/PortfolioProjects/blob/main/bond_prices_vs_sp500_analysis.ipynb"
-								class="button">View
-								Project</a></li>
+								class="button">View Project</a></li>
 					</ul>
 				</article>
 			</section>
-
-
 
 		</div>
 
@@ -225,6 +283,81 @@
 	<script src="assets/js/breakpoints.min.js"></script>
 	<script src="assets/js/util.js"></script>
 	<script src="assets/js/main.js"></script>
+
+	<script>
+		let stockChart;
+		const apiKey = '8UD4IGCSUZ4V7F3L';
+
+		async function fetchStockData(symbol) {
+			const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&apikey=${apiKey}`;
+			const response = await fetch(url);
+			const data = await response.json();
+			return data;
+		}
+
+		function adjustForSplit(data, splitRatio, splitDate) {
+			const timeSeries = data['Time Series (5min)'];
+			for (let time in timeSeries) {
+				if (new Date(time) < new Date(splitDate)) {
+					timeSeries[time]['1. open'] = (parseFloat(timeSeries[time]['1. open']) / splitRatio).toFixed(2);
+					timeSeries[time]['2. high'] = (parseFloat(timeSeries[time]['2. high']) / splitRatio).toFixed(2);
+					timeSeries[time]['3. low'] = (parseFloat(timeSeries[time]['3. low']) / splitRatio).toFixed(2);
+					timeSeries[time]['4. close'] = (parseFloat(timeSeries[time]['4. close']) / splitRatio).toFixed(2);
+				}
+			}
+			return data;
+		}
+
+		function updateTicker(data, symbol) {
+			const timeSeries = data['Time Series (5min)'];
+			const latestTime = Object.keys(timeSeries)[0];
+			const latestData = timeSeries[latestTime];
+			document.getElementById('live-ticker').innerHTML = `${symbol}: ${latestData['1. open']}`;
+		}
+
+		function drawChart(data, symbol) {
+			const timeSeries = data['Time Series (5min)'];
+			const labels = Object.keys(timeSeries).reverse();
+			const prices = labels.map(time => timeSeries[time]['1. open']).reverse();
+
+			const ctx = document.getElementById('stock-chart').getContext('2d');
+
+			if (stockChart) {
+				stockChart.destroy();
+			}
+
+			stockChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: labels,
+					datasets: [{
+						label: `${symbol} Stock Price`,
+						data: prices,
+						borderColor: 'rgba(75, 192, 192, 1)',
+						borderWidth: 1
+					}]
+				}
+			});
+		}
+
+		function updateStock(symbol) {
+			fetchStockData(symbol).then(data => {
+				if (symbol === 'NVDA') {
+					data = adjustForSplit(data, 4, '2021-07-20'); // Adjust for Nvidia 4-for-1 split on July 20, 2021
+				}
+				updateTicker(data, symbol);
+				drawChart(data, symbol);
+			});
+		}
+
+		function toggleDropdown() {
+			const dropdown = document.querySelector('.dropdown');
+			dropdown.classList.toggle('show');
+		}
+
+		// Set default to S&P 500 (SPY)
+		updateStock('SPY');
+	</script>
 
 </body>
 
