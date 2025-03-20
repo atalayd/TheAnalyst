@@ -313,12 +313,12 @@
 		let stockChart;
 		const apiKey = '8UD4IGCSUZ4V7F3L';
 
-		async function fetchStockData(symbol) {
-			const url = `https://www.alphavantage.co/query?function=TIME_SERIES_INTRADAY&symbol=${symbol}&interval=5min&apikey=${apiKey}`;
-			const response = await fetch(url);
-			const data = await response.json();
-			return data;
-		}
+	async function fetchStockData(symbol) {
+		const response = await fetch(`/api/stock?symbol=${symbol}`);
+		const data = await response.json();
+		return data;
+	}
+
 
 		function adjustForSplit(data, splitRatio, splitDate) {
 			const timeSeries = data['Time Series (5min)'];
