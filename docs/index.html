@@ -300,91 +300,123 @@
 
 	</div>
 
-	<!-- Scripts -->
-	<script src="assets/js/jquery.min.js"></script>
-	<script src="assets/js/jquery.scrollex.min.js"></script>
-	<script src="assets/js/jquery.scrolly.min.js"></script>
-	<script src="assets/js/browser.min.js"></script>
-	<script src="assets/js/breakpoints.min.js"></script>
-	<script src="assets/js/util.js"></script>
-	<script src="assets/js/main.js"></script>
+<!-- Scripts -->
+<script src="assets/js/jquery.min.js"></script>
+<script src="assets/js/jquery.scrollex.min.js"></script>
+<script src="assets/js/jquery.scrolly.min.js"></script>
+<script src="assets/js/browser.min.js"></script>
+<script src="assets/js/breakpoints.min.js"></script>
+<script src="assets/js/util.js"></script>
+<script src="assets/js/main.js"></script>
 
-	<script>
-		let stockChart;
-		const apiKey = '8UD4IGCSUZ4V7F3L';
+<script>
+	let stockChart;
 
+	// 🔐 Alpha Vantage API key — currently unused since you're using Firebase, but left in case needed
+	const apiKey = '8UD4IGCSUZ4V7F3L';
+
+	/**
+	 * 📦 Fetches stock data from your Firebase function
+	 * @param {string} symbol - Stock symbol like SPY, QQQ
+	 * @returns {Promise<Object>} - Parsed JSON stock data
+	 */
 	async function fetchStockData(symbol) {
 		const response = await fetch(`https://us-central1-portfolio-page---theanalyst.cloudfunctions.net/getStockData?symbol=${symbol}`);
 		const data = await response.json();
 		return data;
 	}
 
-
-
-
-		function adjustForSplit(data, splitRatio, splitDate) {
-			const timeSeries = data['Time Series (5min)'];
-			for (let time in timeSeries) {
-				if (new Date(time) < new Date(splitDate)) {
-					timeSeries[time]['1. open'] = (parseFloat(timeSeries[time]['1. open']) / splitRatio).toFixed(2);
-					timeSeries[time]['2. high'] = (parseFloat(timeSeries[time]['2. high']) / splitRatio).toFixed(2);
-					timeSeries[time]['3. low'] = (parseFloat(timeSeries[time]['3. low']) / splitRatio).toFixed(2);
-					timeSeries[time]['4. close'] = (parseFloat(timeSeries[time]['4. close']) / splitRatio).toFixed(2);
-				}
+	/**
+	 * 🪄 Adjusts historical stock prices for a stock split
+	 * @param {Object} data - Stock data from Alpha Vantage
+	 * @param {number} splitRatio - e.g. 4 for a 4-for-1 split
+	 * @param {string} splitDate - Date of the split (ISO format)
+	 * @returns {Object} - Adjusted stock data
+	 */
+	function adjustForSplit(data, splitRatio, splitDate) {
+		const timeSeries = data['Time Series (5min)'];
+		for (let time in timeSeries) {
+			if (new Date(time) < new Date(splitDate)) {
+				timeSeries[time]['1. open'] = (parseFloat(timeSeries[time]['1. open']) / splitRatio).toFixed(2);
+				timeSeries[time]['2. high'] = (parseFloat(timeSeries[time]['2. high']) / splitRatio).toFixed(2);
+				timeSeries[time]['3. low'] = (parseFloat(timeSeries[time]['3. low']) / splitRatio).toFixed(2);
+				timeSeries[time]['4. close'] = (parseFloat(timeSeries[time]['4. close']) / splitRatio).toFixed(2);
 			}
-			return data;
+		}
+		return data;
+	}
+
+	/**
+	 * 💬 Updates the live ticker text with the latest price (rounded to 2 decimals)
+	 * @param {Object} data - Stock data
+	 * @param {string} symbol - Stock symbol
+	 */
+	function updateTicker(data, symbol) {
+		const timeSeries = data['Time Series (5min)'];
+		const latestTime = Object.keys(timeSeries)[0];
+		const latestData = timeSeries[latestTime];
+		const price = parseFloat(latestData['1. open']).toFixed(2); // ✅ FIXED: 2 decimal places
+		document.getElementById('live-ticker').innerHTML = `${symbol}: $${price}`;
+	}
+
+	/**
+	 * 📈 Draws a line chart using Chart.js with the stock data
+	 * @param {Object} data - Stock data
+	 * @param {string} symbol - Stock symbol
+	 */
+	function drawChart(data, symbol) {
+		const timeSeries = data['Time Series (5min)'];
+		const labels = Object.keys(timeSeries).reverse(); // x-axis: timestamps
+		const prices = labels.map(time => parseFloat(timeSeries[time]['1. open'])).reverse(); // y-axis: prices
+
+		const ctx = document.getElementById('stock-chart').getContext('2d');
+
+		// 🔁 If chart exists, destroy it before drawing a new one
+		if (stockChart) {
+			stockChart.destroy();
 		}
 
-		function updateTicker(data, symbol) {
-			const timeSeries = data['Time Series (5min)'];
-			const latestTime = Object.keys(timeSeries)[0];
-			const latestData = timeSeries[latestTime];
-			document.getElementById('live-ticker').innerHTML = `${symbol}: ${latestData['1. open']}`;
-		}
-
-		function drawChart(data, symbol) {
-			const timeSeries = data['Time Series (5min)'];
-			const labels = Object.keys(timeSeries).reverse();
-			const prices = labels.map(time => timeSeries[time]['1. open']).reverse();
-
-			const ctx = document.getElementById('stock-chart').getContext('2d');
-
-			if (stockChart) {
-				stockChart.destroy();
+		// 🖼️ Draw chart
+		stockChart = new Chart(ctx, {
+			type: 'line',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: `${symbol} Stock Price`,
+					data: prices,
+					borderColor: 'rgba(75, 192, 192, 1)',
+					borderWidth: 1
+				}]
 			}
+		});
+	}
 
-			stockChart = new Chart(ctx, {
-				type: 'line',
-				data: {
-					labels: labels,
-					datasets: [{
-						label: `${symbol} Stock Price`,
-						data: prices,
-						borderColor: 'rgba(75, 192, 192, 1)',
-						borderWidth: 1
-					}]
-				}
-			});
-		}
+	/**
+	 * 🔄 Fetches and displays stock data, adjusts if needed (e.g. NVDA split)
+	 * @param {string} symbol - Stock symbol
+	 */
+	function updateStock(symbol) {
+		fetchStockData(symbol).then(data => {
+			if (symbol === 'NVDA') {
+				data = adjustForSplit(data, 4, '2021-07-20'); // 📉 Adjust NVDA data for split
+			}
+			updateTicker(data, symbol); // 💬 Update number
+			drawChart(data, symbol);   // 📊 Draw chart
+		});
+	}
 
-		function updateStock(symbol) {
-			fetchStockData(symbol).then(data => {
-				if (symbol === 'NVDA') {
-					data = adjustForSplit(data, 4, '2021-07-20'); // Adjust for Nvidia 4-for-1 split on July 20, 2021
-				}
-				updateTicker(data, symbol);
-				drawChart(data, symbol);
-			});
-		}
+	/**
+	 * 🔽 Toggles the dropdown menu visibility
+	 */
+	function toggleDropdown() {
+		const dropdown = document.querySelector('.dropdown');
+		dropdown.classList.toggle('show');
+	}
 
-		function toggleDropdown() {
-			const dropdown = document.querySelector('.dropdown');
-			dropdown.classList.toggle('show');
-		}
+	// 🚀 Load SPY chart by default when page loads
+	updateStock('SPY');
+</script>
 
-		// Set default to S&P 500 (SPY)
-		updateStock('SPY');
-	</script>
 
 </body>
 
