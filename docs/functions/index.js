@@ -4,8 +4,13 @@ const functions = require("firebase-functions"); // ✅ Added missing import
 const admin = require("firebase-admin");
 const axios = require("axios");
 const cors = require("cors")({
-  origin: ["https://your-website.com"], // 🔹 Replace with your actual website URL
+  origin: [
+    "https://atalayd.github.io", // ✅ Your live website
+    "http://127.0.0.1:5500", // ✅ Live Server testing
+    "http://localhost:5500", // ✅ Alternate live server format
+  ],
 });
+
 
 // ✅ Ensure Firebase is initialized correctly
 if (admin.apps.length === 0) {

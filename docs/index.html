@@ -314,10 +314,12 @@
 		const apiKey = '8UD4IGCSUZ4V7F3L';
 
 	async function fetchStockData(symbol) {
-		const response = await fetch(`/api/stock?symbol=${symbol}`);
+		const response = await fetch(`https://us-central1-portfolio-page---theanalyst.cloudfunctions.net/getStockData?symbol=${symbol}`);
 		const data = await response.json();
 		return data;
 	}
+
+
 
 
 		function adjustForSplit(data, splitRatio, splitDate) {

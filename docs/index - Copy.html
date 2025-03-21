@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Stock Chart Test</title>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			padding: 20px;
+		}
+
+		#live-ticker {
+			font-size: 24px;
+			margin-bottom: 20px;
+		}
+
+		canvas {
+			max-width: 100%;
+			height: 400px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>Live Stock Chart Test</h1>
+	<div id="live-ticker">Loading...</div>
+	<canvas id="stock-chart"></canvas>
+
+	<script>
+		let stockChart = null;
+
+		async function fetchStockData(symbol) {
+			const response = await fetch(`https://us-central1-portfolio-page---theanalyst.cloudfunctions.net/getStockData?symbol=${symbol}`);
+			const data = await response.json();
+			return data;
+		}
+
+		function updateTicker(data, symbol) {
+			const timeSeries = data['Time Series (5min)'];
+			const latestTime = Object.keys(timeSeries)[0];
+			const latestData = timeSeries[latestTime];
+			const price = latestData['4. close'];
+			document.getElementById('live-ticker').textContent = `${symbol}: $${parseFloat(price).toFixed(2)}`;
+		}
+
+		function drawChart(data, symbol) {
+			const timeSeries = data['Time Series (5min)'];
+			const labels = Object.keys(timeSeries).reverse();
+			const prices = labels.map(time => parseFloat(timeSeries[time]['4. close'])).reverse();
+
+			const ctx = document.getElementById('stock-chart').getContext('2d');
+
+			if (stockChart) {
+				stockChart.destroy();
+			}
+
+			stockChart = new Chart(ctx, {
+				type: 'line',
+				data: {
+					labels: labels,
+					datasets: [{
+						label: `${symbol} Price`,
+						data: prices,
+						borderColor: 'rgba(75, 192, 192, 1)',
+						fill: false,
+						tension: 0.1
+					}]
+				},
+				options: {
+					responsive: true,
+					scales: {
+						x: {
+							ticks: {
+								maxTicksLimit: 10,
+							}
+						},
+						y: {
+							beginAtZero: false
+						}
+					}
+				}
+			});
+		}
+
+		async function updateStock(symbol) {
+			try {
+				const data = await fetchStockData(symbol);
+				updateTicker(data, symbol);
+				drawChart(data, symbol);
+			} catch (error) {
+				document.getElementById('live-ticker').textContent = "Error fetching data";
+				console.error(error);
+			}
+		}
+
+		// Call it on page load
+		window.onload = () => {
+			updateStock("SPY"); // You can change this to QQQ, NVDA, etc.
+		};
+	</script>
+</body>
+
+</html>
